@@ -21,6 +21,7 @@ class ManageArticleController extends GetxController {
   
   final RxBool isEditing = false.obs;
   final RxBool isLoading = false.obs;
+  
 
   final Rxn<PostArticleEntity> response = Rxn<PostArticleEntity>();
 
