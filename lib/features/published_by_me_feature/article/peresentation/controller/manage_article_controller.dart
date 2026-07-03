@@ -2,6 +2,9 @@
 
 import 'dart:convert';
 
+import 'package:clean_app/core/config/constants/get_storage_constant.dart';
+import 'package:clean_app/core/config/constants/my_colors.dart';
+import 'package:clean_app/core/config/widgets/extensions.dart';
 import 'package:clean_app/core/config/widgets/snack_bar.dart';
 import 'package:clean_app/features/home_feature/domain/entities/tags_entity.dart';
 import 'package:clean_app/features/published_by_me_feature/article/domain/entities/post_article_entity.dart';
@@ -11,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class ManageArticleController extends GetxController {
   final PostArticleUseCase postArticleUseCase;
@@ -26,6 +30,8 @@ class ManageArticleController extends GetxController {
   final Rxn<PostArticleEntity> response = Rxn<PostArticleEntity>();
 
   final RxList<TagsEntity> selectedTags = <TagsEntity>[].obs;
+
+  final RxList<TagsEntity> allTags = <TagsEntity>[].obs;
 
   final RxString imagePath = ''.obs;
   final RxString content = ''.obs;
@@ -58,7 +64,7 @@ final ScrollController scrollController = ScrollController();
   }
 
   bool isSelected(TagsEntity tag) {
-    return selectedTags.contains(tag);
+    return selectedTags.any((e) =>e.id == tag.id ,);
   }
 
 
@@ -85,7 +91,63 @@ void loadContent(String data) {
   }
 }
 
- 
+ void selectTags(BuildContext context){
+ final size = MediaQuery.of(context).size;
+  showModalBottomSheet(
+    context: context, 
+    builder: (_) {
+      return Container(
+        height: size.height/3,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16)
+          ),
+          color: SolidColors.scaffoldBg
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+          
+            children: [
+              Text("انتخاب دسته بندی"),
+              (size.width/35).height,
+              Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: List.generate(
+    allTags.length,
+    (index) {
+      final tag = allTags[index];
+
+      return InkWell(
+        onTap: () => toggleTag(tag),
+        child: Container(
+          padding: EdgeInsets.fromLTRB(
+            size.width/30,
+            size.width/35,
+            size.width/30,
+            size.width/35,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected(tag)
+                ? Colors.blue
+                : SolidColors.surface,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Text(tag.title!),
+        ),
+      );
+    },
+  ),
+)
+              
+            ],
+          ),
+        ),
+      );
+    },);
+}
 
 
  Future pickFile()async{
@@ -98,10 +160,10 @@ void loadContent(String data) {
 
 
   Future<void> postArticle({
-    required String catId,
-    required String userId,
+
+   
     required BuildContext context,
-    required String command,
+  
   }) async {
     try {
       isLoading(true);
@@ -109,10 +171,10 @@ void loadContent(String data) {
       response.value = await postArticleUseCase.postArticle(
         title: titleController.text.trim(),
         content: content,
-        catId: catId,
-        userId: userId,
+        catId: selectedTags.first.id!,
+        userId: GetStorage().read(GetStorageConstant().myUserId),
         image: imagePath.value,
-        command: command,
+        command: "store",
         tagList: tagList,
       );
       if (!context.mounted) return;

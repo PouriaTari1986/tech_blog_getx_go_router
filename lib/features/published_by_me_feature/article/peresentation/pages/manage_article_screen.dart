@@ -14,7 +14,6 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
-
 class ManageArticleScreen extends StatelessWidget {
   const ManageArticleScreen({super.key});
 
@@ -187,10 +186,7 @@ class ManageArticleScreen extends StatelessWidget {
                       (size.width / 20).height,
                       InkWell(
                         onTap: () {
-                          context.pushNamed(
-                            NamedRout.htmlEditingScreenName,
-                            
-                          );
+                          context.pushNamed(NamedRout.htmlEditingScreenName);
                         },
                         child: Row(
                           children: [
@@ -203,28 +199,50 @@ class ManageArticleScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      
-                        
 
-                        controller.content.value.isEmpty? 
-                        Text(MyStrings.titleAppBarArticleContentEditor) :
-                         QuillEditor(
-                          controller: controller.contentController,
-                          focusNode: FocusNode(), 
-                          scrollController: ScrollController(),),
-                           
+                      controller.content.value.isEmpty
+                          ? Text(MyStrings.titleAppBarArticleContentEditor)
+                          : QuillEditor(
+                              controller: controller.contentController,
+                              focusNode: FocusNode(),
+                              scrollController: ScrollController(),
+                            ),
 
                       ////selecting tags
                       (size.width / 20).height,
-                      Row(
-                        children: [
-                          Assets.images.write.image(scale: 1.5),
-                          (size.width / 45).width,
-                          Text(
-                            MyStrings.selectCategory,
-                            style: LightTextTheme.blueText,
-                          ),
-                        ],
+                      InkWell(
+                        onTap: () {
+                          controller.selectTags(context);
+                          context.pop();
+                        },
+                        child: Row(
+                          children: [
+                            Assets.images.write.image(scale: 1.5),
+                            (size.width / 45).width,
+                            Text(
+                              MyStrings.selectCategory,
+                              style: LightTextTheme.blueText,
+                            ),
+                          ],
+                        ),
+                      ),
+                      (size.width / 20).height,
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: controller.selectedTags.map((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: SolidColors.surface,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(tag.title ?? ''),
+                          );
+                        }).toList(),
                       ),
                       (size.width / 3).height,
                       ElevatedButton(
@@ -234,7 +252,10 @@ class ManageArticleScreen extends StatelessWidget {
                           ),
                         ),
 
-                        onPressed: () {},
+                        onPressed: () {
+                        controller.postArticle(context: context);
+                        
+                        },
                         child: Text("تموم شد"),
                       ),
                     ],
